@@ -71,7 +71,7 @@ class packetbeat::config inherits packetbeat {
       },
     })
 
-    $packetbeat_config = merge($packetbeat_config, $af_packet_config)
+    $_packetbeat_config = merge($packetbeat_config, $af_packet_config)
   }
 
   file{'packetbeat.yml':
@@ -80,7 +80,10 @@ class packetbeat::config inherits packetbeat {
     owner        => 'root',
     group        => 'root',
     mode         => $packetbeat::config_file_mode,
-    content      => inline_template('<%= @packetbeat_config.to_yaml() %>'),
+    content      => $packetbeat::sniff_type ? {
+                      'af_packet' => inline_template('<%= @_packetbeat_config.to_yaml() %>'),
+                      default     => inline_template('<%= @packetbeat_config.to_yaml() %>')
+                    },
     validate_cmd => $validate_cmd,
   }
 }
